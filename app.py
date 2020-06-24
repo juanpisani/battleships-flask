@@ -58,11 +58,10 @@ def connect_player(json_obj):
     possible_opponents.append(user)
     socketio.emit('connected_player', dict(player=user), broadcast=True,
                   include_self=True)
-    logging.info(
-        "User {0} with ID {1} is in the lobby".format(user['name'], user['user_id']))
-    logging.info(
-        "Users in the lobby: {0}".format(str(possible_opponents)))
     if len(possible_opponents) == 2:
+        if possible_opponents[0] == possible_opponents[1]:
+            possible_opponents.pop(1)
+            return
         game = create_game(possible_opponents[0], possible_opponents[1])
         socketio.emit('ready_to_start', dict(game=game.game_id, player_1=possible_opponents[0], player_2=possible_opponents[1]),
                       broadcast=True,
@@ -87,9 +86,9 @@ def board_ready(json_obj):
     game = get_game(json_obj['game_id'])
     user = db.get_user(json_obj['user_id'])
     game.set_board(user.user_id, json_obj['board'])
-    socketio.emit('user_state_update', {"user_id": user.id, "ready": True}, room=game.game_id, include_self=False)
+    socketio.emit('user_board_received', {"user_id": user['user_id']}, room=game.game_id)
     if game.boards_ready():
-        socketio.emit("boards_ready", rooom=game.game_id, include_self=False)
+        socketio.emit("boards_ready", rooom=game.game_id)
 
 
 @socketio.on('fire')
@@ -101,11 +100,11 @@ def fire(json_obj):
         raise Exception("wrong turn")
     x = json_obj['x']
     y = json_obj['y']
-    turn, winner = game.shoot(x, y, user.user_id)
-    if winner:
-        pass
-    else:
-        pass
+    game.validate_shot(user, x, y)
+    hit, game_ended = game.shoot(x, y, user['user_id'])
+    socketio.emit('shot_processed', dict(hit=hit), room=game.game_id)
+    if game_ended:
+        socketio.emit('game_ended', dict(winner=user), room=game.game_id)
 
 
 def create_game(player_1, player_2):

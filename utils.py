@@ -29,7 +29,7 @@ ROW_MAP = {
 
 # fila x columna
 def dict_to_board(board):
-    result = np.empty((10, 10), dtype=Cell)
+    result = np.empty((10, 10), dtype=BoatCell)
     for i in range(len(board)):
         extreme1 = board[i]['extreme1']
         extreme2 = board[i]['extreme2']
@@ -41,16 +41,34 @@ def dict_to_board(board):
                 lower = extreme2
                 higher = extreme1
             for j in range(int(lower[1]) - 1, int(higher[1])):
-                result[ROW_MAP[lower[0]]][j] = Cell(True).toJSON()
+                result[ROW_MAP[lower[0]]][j] = BoatCell(True).toJSON()
         else:
             # caso {extreme1: C5, extreme2: F5}
             if ROW_MAP[extreme1[0]] > ROW_MAP[extreme2[0]]:
                 lower = extreme2
                 higher = extreme1
             for j in range(ROW_MAP[lower[0]], ROW_MAP[higher[0]] + 1):
-                result[j][int(lower[1]) - 1] = Cell(True).toJSON()
+                result[j][int(lower[1]) - 1] = BoatCell(True).toJSON()
     for i in range(0, 10):
         for j in range(0, 10):
             if result[i][j] is None:
-                result[i][j] = Cell(False).toJSON()
+                result[i][j] = BoatCell(False).toJSON()
+    return result
+
+
+def empty_shot_board():
+    result = np.empty((10, 10), dtype=ShotCell)
+    for i in range(0, 10):
+        for j in range(0, 10):
+            if result[i][j] is None:
+                result[i][j] = ShotCell(False).toJSON()
+    return result
+
+
+def empty_boat_board():
+    result = np.empty((10, 10), dtype=BoatCell)
+    for i in range(0, 10):
+        for j in range(0, 10):
+            if result[i][j] is None:
+                result[i][j] = BoatCell(False).toJSON()
     return result

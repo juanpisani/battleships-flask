@@ -1,4 +1,6 @@
-from utils import dict_to_board
+import numpy as np
+
+from utils import dict_to_board, empty_boat_board, empty_shot_board
 
 
 class User:
@@ -22,13 +24,15 @@ class Game:
         self.game_id = game_id
         self.player1 = player1
         self.player2 = player2
-        self.boards = {player1['user_id']: [[]], player2['user_id']: [[]]}
+        self.boat_boards = {player1['user_id']: empty_boat_board(), player2['user_id']: empty_boat_board()}
+        self.shot_boards = {player1['user_id']: empty_shot_board(), player2['user_id']: empty_shot_board()}
         self.players_joined = {player1['user_id']: False, player2['user_id']: False}
         self.current_player = player1
+        self.hits = {player1['user_id']: 0, player2['user_id']: 0}
 
     def set_board(self, user_id, cells):
         board = dict_to_board(cells)
-        self.boards.update({user_id: board})
+        self.boat_boards.update({user_id: board})
 
     def join_player(self, user_id):
         self.players_joined.update({user_id: True})
@@ -37,24 +41,50 @@ class Game:
         return all(self.players_joined.values())
 
     def boards_ready(self):
-        return all(self.boards.values())
+        return all(self.boat_boards.values())
 
-    def shoot(self, user_id, json_board):
-        pass
+    # return hit, game_ended
+    def shoot(self, x, y, user_id):
+        user_board = self.boat_boards[user_id]
+        self.shot_boards[user_id][x][y].shot = True
+        if not user_board[x][y].boat:
+            self.change_turn()
+            return False, False
+        self.hits[user_id] += 1
+        return True, self.check_end_game(user_id)
+
+    def validate_shot(self, user_id, x, y):
+        if self.shot_boards[user_id][x][y].shot:
+            raise Exception('Already made a shot there')
+
+    # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
+    def check_end_game(self, user_id):
+        return self.hits[user_id] == 20
+
+    def change_turn(self):
+        if self.current_player == self.player1:
+            self.current_player = self.player2
+        else:
+            self.current_player = self.player1
 
     def winner(self):
         return
 
 
-class Cell:
-
-    boat = False
+class BoatCell:
 
     def __init__(self, boat):
         self.boat = boat
 
-    def __str__(self):
-        return self.boat
-
     def toJSON(self):
         return {"boat": self.boat}
+
+
+class ShotCell:
+
+    def __init__(self, shot):
+        self.shot = shot
+
+    def toJSON(self):
+        return {"shot": self.shot}
+
