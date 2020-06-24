@@ -4,4 +4,4 @@
 
 Setup database in db/mysql.py
 
-Run project -> FLASK_APP=src/app.py flask run
+Run project -> FLASK_APP=app.py flask run
