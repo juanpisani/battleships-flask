@@ -10,10 +10,11 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 
 from db.mysql import Database
+from exceptions.game_exception import GameException
 from models.models import User, Game
 
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app=app)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -85,10 +86,10 @@ def join_game_room(json_obj):
 def board_ready(json_obj):
     game = get_game(json_obj['game_id'])
     user = db.get_user(json_obj['user_id'])
-    game.set_board(user.user_id, json_obj['board'])
-    socketio.emit('user_board_received', {"user_id": user['user_id']}, room=game.game_id)
+    game.set_board(user['user_id'], json_obj['board'])
+    socketio.emit('user_board_received', dict(user_id=user['user_id']), room=game.game_id)
     if game.boards_ready():
-        socketio.emit("boards_ready", rooom=game.game_id)
+        socketio.emit("boards_ready", dict(message='Boards are ready, start to play!'), rooom=game.game_id)
 
 
 @socketio.on('fire')
@@ -96,8 +97,7 @@ def fire(json_obj):
     game = get_game(json_obj['game_id'])
     user = db.get_user(json_obj['user_id'])
     if user != game.current_player:
-        # TODO ERROR
-        raise Exception("wrong turn")
+        raise GameException("user_shot", "Wrong turn")
     x = json_obj['x']
     y = json_obj['y']
     game.validate_shot(user, x, y)
