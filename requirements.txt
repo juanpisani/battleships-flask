@@ -1,0 +1,6 @@
+authlib
+flask~=1.1.2
+google-api-python-client
+google-auth
+virtualenv
+PyMySQL~=0.9.3
