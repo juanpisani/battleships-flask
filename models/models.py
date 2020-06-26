@@ -75,8 +75,18 @@ class Game:
 
     # TODO PARA VER SI FUE HUNDIDO
     def last_part_of_boat(self, x, y, board):
-        if board[y+1][x].boat or board[y-1][x].boat or board[y][x+1].boat or board[y][x-1].boat:
-            return False
+        if board[y+1][x].boat:
+            if not board[y+1][x].hit:
+                return False
+        if board[y-1][x].boat:
+            if not board[y-1][x].hit:
+                return False
+        if board[y][x+1].boat:
+            if not board[y][x+1].hit:
+                return False
+        if board[y][x-1].boat:
+            if not board[y][x-1].hit:
+                return False
         return True
 
     # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
