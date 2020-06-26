@@ -60,14 +60,14 @@ class Game:
     def missed_shot(self, x, y, user_id):
         opponent_id = self.player1['user_id']
         if user_id == opponent_id:
-            opponent_id = self.player2['user_2']
+            opponent_id = self.player2['user_id']
         self.shot_boards[user_id][x][y].hit = False
         self.boat_boards[opponent_id][x][y].hit = False
 
     def hit_shot(self, x, y, user_id):
         opponent_id = self.player1['user_id']
         if user_id == opponent_id:
-            opponent_id = self.player2['user_2']
+            opponent_id = self.player2['user_id']
         self.shot_boards[user_id][x][y].hit = True
         self.boat_boards[opponent_id][x][y].hit = True
         self.hits[user_id] += 1
