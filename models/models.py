@@ -48,12 +48,12 @@ class Game:
 
     # return hit, sunken, game_ended
     def shoot(self, x, y, user_id):
-        opponent_id = self.player1[user_id]
+        opponent_id = self.player1['user_id']
         if user_id == opponent_id:
-            opponent_id = self.player2[user_id]
+            opponent_id = self.player2['user_id']
         opponent_board = self.boat_boards[opponent_id]
-        self.shot_boards[user_id][x][y].shot = True
-        if not opponent_board[x][y].boat:
+        self.shot_boards[user_id][y][x].shot = True
+        if not opponent_board[y][x].boat:
             self.missed_shot(x, y, user_id, opponent_id)
             self.change_turn()
             return False, False, False
@@ -61,16 +61,16 @@ class Game:
         return True, self.last_part_of_boat(x, y), self.check_end_game(user_id)
 
     def missed_shot(self, x, y, user_id, opponent_id):
-        self.shot_boards[user_id][x][y].hit = False
-        self.boat_boards[opponent_id][x][y].hit = False
+        self.shot_boards[user_id][y][x].hit = False
+        self.boat_boards[opponent_id][y][x].hit = False
 
     def hit_shot(self, x, y, user_id, opponent_id):
-        self.shot_boards[user_id][x][y].hit = True
-        self.boat_boards[opponent_id][x][y].hit = True
+        self.shot_boards[user_id][y][x].hit = True
+        self.boat_boards[opponent_id][y][x].hit = True
         self.hits[user_id] += 1
 
     def validate_shot(self, user_id, x, y):
-        if self.shot_boards[user_id][x][y].shot:
+        if self.shot_boards[user_id][y][x].shot:
             raise GameException('invalid_shot', 'Already made a shot there')
 
     # TODO PARA VER SI FUE HUNDIDO
