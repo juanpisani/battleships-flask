@@ -90,6 +90,7 @@ def board_ready(json_obj):
     socketio.emit('user_board_received', dict(user_id=user['user_id']), room=game.game_id)
     if game.boards_ready():
         socketio.emit("boards_ready", dict(message='Boards are ready, start to play!'), rooom=game.game_id)
+        socketio.emit("player_turn", dict(user_id=game.current_player['user_id']), room=game.game_id)
 
 
 @socketio.on('fire')
@@ -101,10 +102,12 @@ def fire(json_obj):
     x = json_obj['x']
     y = json_obj['y']
     game.validate_shot(user['user_id'], x, y)
-    hit, sunken, game_ended, turn = game.shoot(x, y, user['user_id'])
-    socketio.emit('shot_processed', dict(hit=hit, sunken=sunken, turn=turn), room=game.game_id)
+    hit, sunken, game_ended, turn_changed = game.shoot(x, y, user['user_id'])
+    socketio.emit('shot_processed', dict(hit=hit, sunken=sunken), room=game.game_id)
     if game_ended:
         socketio.emit('game_ended', dict(winner=user), room=game.game_id)
+    elif turn_changed:
+        socketio.emit("player_turn", dict(user_id=game.current_player['user_id']), room=game.game_id)
 
 
 def create_game(player_1, player_2):
