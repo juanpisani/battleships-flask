@@ -58,7 +58,7 @@ class Game:
             self.change_turn()
             return False, False, False, True
         self.hit_shot(x, y, user_id, opponent_id)
-        return True, self.last_part_of_boat(x, y), self.check_end_game(user_id), False
+        return True, self.last_part_of_boat(x, y, opponent_board), self.check_end_game(user_id), False
 
     def missed_shot(self, x, y, user_id, opponent_id):
         self.shot_boards[user_id][y][x].hit = False
@@ -74,8 +74,10 @@ class Game:
             raise GameException('invalid_shot', 'Already made a shot there')
 
     # TODO PARA VER SI FUE HUNDIDO
-    def last_part_of_boat(self, x, y):
-        return False
+    def last_part_of_boat(self, x, y, board):
+        if board[y+1][x].boat or board[y-1][x].boat or board[y][x+1].boat or board[y][x-1].boat:
+            return False
+        return True
 
     # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
     def check_end_game(self, user_id):

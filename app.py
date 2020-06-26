@@ -103,7 +103,7 @@ def fire(json_obj):
     y = json_obj['y']
     game.validate_shot(user['user_id'], x, y)
     hit, sunken, game_ended, turn_changed = game.shoot(x, y, user['user_id'])
-    socketio.emit('shot_processed', dict(hit=hit, sunken=sunken), room=game.game_id)
+    socketio.emit('shot_processed', dict(user_shot=json_obj['user_id'], hit=hit, sunken=sunken, x=x, y=y), room=game.game_id)
     if game_ended:
         socketio.emit('game_ended', dict(winner=user), room=game.game_id)
     elif turn_changed:
