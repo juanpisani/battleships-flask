@@ -36,25 +36,25 @@ def dict_to_board(board):
         higher = extreme2
         # caso {extreme1: A1, extreme2: A1}
         if extreme1 == extreme2:
-            result[ROW_MAP[extreme1[0]]][int(extreme1[1:]) - 1] = models.BoatCell(True).toJSON()
+            result[ROW_MAP[extreme1[0]]][int(extreme1[1:]) - 1] = models.BoatCell(True, False)
         # caso {extreme1: A1, extreme2: A4}
         elif extreme1[0] == extreme2[0]:
             if extreme1[1:] > extreme2[1:]:
                 lower = extreme2
                 higher = extreme1
             for j in range(int(lower[1:]) - 1, int(higher[1:])):
-                result[ROW_MAP[lower[0]]][j] = models.BoatCell(True).toJSON()
+                result[ROW_MAP[lower[0]]][j] = models.BoatCell(True, False)
         else:
             # caso {extreme1: C5, extreme2: F5}
             if ROW_MAP[extreme1[0]] > ROW_MAP[extreme2[0]]:
                 lower = extreme2
                 higher = extreme1
             for j in range(ROW_MAP[lower[0]], ROW_MAP[higher[0]] + 1):
-                result[j][int(lower[1:]) - 1] = models.BoatCell(True).toJSON()
+                result[j][int(lower[1:]) - 1] = models.BoatCell(True, False)
     for i in range(0, 10):
         for j in range(0, 10):
             if result[i][j] is None:
-                result[i][j] = models.BoatCell(False).toJSON()
+                result[i][j] = models.BoatCell(False, False)
     return result
 
 
@@ -63,7 +63,7 @@ def empty_shot_board():
     for i in range(0, 10):
         for j in range(0, 10):
             if result[i][j] is None:
-                result[i][j] = models.ShotCell(False).toJSON()
+                result[i][j] = models.ShotCell(False, False)
     return result
 
 
@@ -72,5 +72,5 @@ def empty_boat_board():
     for i in range(0, 10):
         for j in range(0, 10):
             if result[i][j] is None:
-                result[i][j] = models.BoatCell(False).toJSON()
+                result[i][j] = models.BoatCell(False, False)
     return result

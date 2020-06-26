@@ -1,3 +1,6 @@
+import numpy as np
+
+from exceptions.game_exception import GameException
 from utils import dict_to_board, empty_boat_board, empty_shot_board
 
 
@@ -43,19 +46,39 @@ class Game:
     def boards_ready(self):
         return all(self.players_boards_ready.values())
 
-    # return hit, game_ended
+    # return hit, sunken, game_ended
     def shoot(self, x, y, user_id):
         user_board = self.boat_boards[user_id]
         self.shot_boards[user_id][x][y].shot = True
         if not user_board[x][y].boat:
+            self.missed_shot(x, y, user_id)
             self.change_turn()
-            return False, False
+            return False, False, False
+        self.hit_shot(x, y, user_id)
+        return True, self.last_part_of_boat(x, y), self.check_end_game(user_id)
+
+    def missed_shot(self, x, y, user_id):
+        opponent_id = self.player1['user_id']
+        if user_id == opponent_id:
+            opponent_id = self.player2['user_2']
+        self.shot_boards[user_id][x][y].hit = False
+        self.boat_boards[opponent_id][x][y].hit = False
+
+    def hit_shot(self, x, y, user_id):
+        opponent_id = self.player1['user_id']
+        if user_id == opponent_id:
+            opponent_id = self.player2['user_2']
+        self.shot_boards[user_id][x][y].hit = True
+        self.boat_boards[opponent_id][x][y].hit = True
         self.hits[user_id] += 1
-        return True, self.check_end_game(user_id)
 
     def validate_shot(self, user_id, x, y):
         if self.shot_boards[user_id][x][y].shot:
-            raise Exception('Already made a shot there')
+            raise GameException('invalid_shot', 'Already made a shot there')
+
+    # TODO PARA VER SI FUE HUNDIDO
+    def last_part_of_boat(self, x, y):
+        return False
 
     # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
     def check_end_game(self, user_id):
@@ -73,8 +96,9 @@ class Game:
 
 class BoatCell:
 
-    def __init__(self, boat):
+    def __init__(self, boat, hit):
         self.boat = boat
+        self.hit = hit
 
     def toJSON(self):
         return {"boat": self.boat}
@@ -82,8 +106,9 @@ class BoatCell:
 
 class ShotCell:
 
-    def __init__(self, shot):
+    def __init__(self, shot, hit):
         self.shot = shot
+        self.hit = hit
 
     def toJSON(self):
         return {"shot": self.shot}
