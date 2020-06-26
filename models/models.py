@@ -48,26 +48,23 @@ class Game:
 
     # return hit, sunken, game_ended
     def shoot(self, x, y, user_id):
-        user_board = self.boat_boards[user_id]
+        opponent_id = self.player1[user_id]
+        if user_id == opponent_id:
+            opponent_id = self.player2[user_id]
+        opponent_board = self.boat_boards[opponent_id]
         self.shot_boards[user_id][x][y].shot = True
-        if not user_board[x][y].boat:
-            self.missed_shot(x, y, user_id)
+        if not opponent_board[x][y].boat:
+            self.missed_shot(x, y, user_id, opponent_id)
             self.change_turn()
             return False, False, False
-        self.hit_shot(x, y, user_id)
+        self.hit_shot(x, y, user_id, opponent_id)
         return True, self.last_part_of_boat(x, y), self.check_end_game(user_id)
 
-    def missed_shot(self, x, y, user_id):
-        opponent_id = self.player1['user_id']
-        if user_id == opponent_id:
-            opponent_id = self.player2['user_id']
+    def missed_shot(self, x, y, user_id, opponent_id):
         self.shot_boards[user_id][x][y].hit = False
         self.boat_boards[opponent_id][x][y].hit = False
 
-    def hit_shot(self, x, y, user_id):
-        opponent_id = self.player1['user_id']
-        if user_id == opponent_id:
-            opponent_id = self.player2['user_id']
+    def hit_shot(self, x, y, user_id, opponent_id):
         self.shot_boards[user_id][x][y].hit = True
         self.boat_boards[opponent_id][x][y].hit = True
         self.hits[user_id] += 1
