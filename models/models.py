@@ -1,5 +1,3 @@
-import numpy as np
-
 from utils import dict_to_board, empty_boat_board, empty_shot_board
 
 

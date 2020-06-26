@@ -11,7 +11,7 @@ from google.oauth2 import id_token
 
 from db.mysql import Database
 from exceptions.game_exception import GameException
-from models.models import User, Game
+from models.models import Game, User
 
 app = Flask(__name__)
 cors = CORS(app=app)
