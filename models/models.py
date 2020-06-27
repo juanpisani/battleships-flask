@@ -33,6 +33,7 @@ class Game:
         self.hits = {player1['user_id']: 0, player2['user_id']: 0}
 
     def set_board(self, user_id, cells):
+        # dict_to_board also validates board setup
         board = dict_to_board(cells)
         self.boat_boards.update({user_id: board})
         self.players_boards_ready.update({user_id: True})
