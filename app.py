@@ -24,6 +24,7 @@ db = Database()
 
 possible_opponents = []
 games = []
+user_game = {}
 
 
 @app.route('/api/auth', methods=['POST'])
@@ -57,16 +58,20 @@ def register_google():
 def connect_player(json_obj):
     user = db.get_user(json_obj["user_id"])
     possible_opponents.append(user)
-    socketio.emit('connected_player', dict(player=user), broadcast=True,
-                  include_self=True)
+    if len(possible_opponents) == 1:
+        game = create_game(possible_opponents[0])
+        user_game[user['user_id']] = game.game_id
+        join_room(game.game_id, request.sid)
+        socketio.emit('connected_player', dict(player=user), room=game.game_id)
     if len(possible_opponents) == 2:
         if possible_opponents[0] == possible_opponents[1]:
             possible_opponents.pop(1)
             return
-        game = create_game(possible_opponents[0], possible_opponents[1])
-        socketio.emit('ready_to_start', dict(game=game.game_id, player_1=possible_opponents[0], player_2=possible_opponents[1]),
-                      broadcast=True,
-                      include_self=True)
+        game = get_game(user_game[possible_opponents[0]['user_id']])
+        game.receive_second_player(possible_opponents[1])
+        join_room(game.game_id, request.sid)
+        socketio.emit('connected_player', dict(player=user), room=game.game_id)
+        socketio.emit('ready_to_start', dict(game=game.game_id, player_1=possible_opponents[0], player_2=possible_opponents[1]), room=game.game_id)
         possible_opponents.clear()
 
 
@@ -106,12 +111,14 @@ def fire(json_obj):
     socketio.emit('shot_processed', dict(user_shot=json_obj['user_id'], hit=hit, sunken=sunken, x=x, y=y), room=game.game_id)
     if game_ended:
         socketio.emit('game_ended', dict(winner=user), room=game.game_id)
+        user_game.pop(game.player1['user_id'])
+        user_game.pop(game.player2['user_id'])
     elif turn_changed:
         socketio.emit("player_turn", dict(user_id=game.current_player['user_id']), room=game.game_id)
 
 
-def create_game(player_1, player_2):
-    game = Game(str(uuid.uuid1()), player_1, player_2)
+def create_game(player_1):
+    game = Game(str(uuid.uuid1()), player_1)
     games.append(game)
     return game
 
