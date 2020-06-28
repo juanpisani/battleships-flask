@@ -84,19 +84,46 @@ class Game:
 
     # TODO PARA VER SI FUE HUNDIDO
     def last_part_of_boat(self, x, y, board):
-        if board[y+1][x].boat:
-            if not board[y+1][x].hit:
+        return self.check_left(x-1, y, board) \
+               and self.check_right(x+1, y, board) \
+               and self.check_down(x, y-1, board) \
+               and self.check_up(x, y+1, board)
+
+    def check_left(self, x, y, board):
+        if board[y][x].boat:
+            if board[y][x].hit:
+                return self.check_left(x-1, y, board)
+            else:
                 return False
-        if board[y-1][x].boat:
-            if not board[y-1][x].hit:
+        else:
+            return True
+
+    def check_right(self, x, y, board):
+        if board[y][x].boat:
+            if board[y][x].hit:
+                return self.check_left(x+1, y, board)
+            else:
                 return False
-        if board[y][x+1].boat:
-            if not board[y][x+1].hit:
+        else:
+            return True
+
+    def check_up(self, x, y, board):
+        if board[y][x].boat:
+            if board[y][x].hit:
+                return self.check_left(x, y+1, board)
+            else:
                 return False
-        if board[y][x-1].boat:
-            if not board[y][x-1].hit:
+        else:
+            return True
+
+    def check_down(self, x, y, board):
+        if board[y][x].boat:
+            if board[y][x].hit:
+                return self.check_left(x, y-1, board)
+            else:
                 return False
-        return True
+        else:
+            return True
 
     # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
     def check_end_game(self, user_id):
