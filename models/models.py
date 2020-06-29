@@ -105,7 +105,7 @@ class Game:
         try:
             if board[x][y].boat:
                 if board[x][y].hit:
-                    return self.check_left(x + 1, y, board)
+                    return self.check_right(x + 1, y, board)
                 else:
                     return False
             else:
@@ -117,7 +117,7 @@ class Game:
         try:
             if board[x][y].boat:
                 if board[x][y].hit:
-                    return self.check_left(x, y + 1, board)
+                    return self.check_up(x, y + 1, board)
                 else:
                     return False
             else:
@@ -129,7 +129,7 @@ class Game:
         try:
             if board[x][y].boat:
                 if board[x][y].hit:
-                    return self.check_left(x, y - 1, board)
+                    return self.check_down(x, y - 1, board)
                 else:
                     return False
             else:
