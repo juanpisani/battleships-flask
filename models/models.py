@@ -61,8 +61,8 @@ class Game:
         if user_id == opponent_id:
             opponent_id = self.player2['user_id']
         opponent_board = self.boat_boards[opponent_id]
-        self.shot_boards[user_id][y][x].shot = True
-        if not opponent_board[y][x].boat:
+        self.shot_boards[user_id][x][y].shot = True
+        if not opponent_board[x][y].boat:
             self.missed_shot(x, y, user_id, opponent_id)
             self.change_turn()
             return False, False, False, True
@@ -70,16 +70,16 @@ class Game:
         return True, self.last_part_of_boat(x, y, opponent_board), self.check_end_game(user_id), False
 
     def missed_shot(self, x, y, user_id, opponent_id):
-        self.shot_boards[user_id][y][x].hit = False
-        self.boat_boards[opponent_id][y][x].hit = False
+        self.shot_boards[user_id][x][y].hit = False
+        self.boat_boards[opponent_id][x][y].hit = False
 
     def hit_shot(self, x, y, user_id, opponent_id):
-        self.shot_boards[user_id][y][x].hit = True
-        self.boat_boards[opponent_id][y][x].hit = True
+        self.shot_boards[user_id][x][y].hit = True
+        self.boat_boards[opponent_id][x][y].hit = True
         self.hits[user_id] += 1
 
     def validate_shot(self, user_id, x, y):
-        if self.shot_boards[user_id][y][x].shot:
+        if self.shot_boards[user_id][x][y].shot:
             raise GameException('invalid_shot', 'Already made a shot there')
 
     # TODO PARA VER SI FUE HUNDIDO
@@ -90,39 +90,51 @@ class Game:
                and self.check_up(x, y+1, board)
 
     def check_left(self, x, y, board):
-        if board[y][x].boat:
-            if board[y][x].hit:
-                return self.check_left(x-1, y, board)
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_left(x - 1, y, board)
+                else:
+                    return False
             else:
-                return False
-        else:
+                return True
+        except IndexError:
             return True
 
     def check_right(self, x, y, board):
-        if board[y][x].boat:
-            if board[y][x].hit:
-                return self.check_left(x+1, y, board)
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_left(x + 1, y, board)
+                else:
+                    return False
             else:
-                return False
-        else:
+                return True
+        except IndexError:
             return True
 
     def check_up(self, x, y, board):
-        if board[y][x].boat:
-            if board[y][x].hit:
-                return self.check_left(x, y+1, board)
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_left(x, y + 1, board)
+                else:
+                    return False
             else:
-                return False
-        else:
+                return True
+        except IndexError:
             return True
 
     def check_down(self, x, y, board):
-        if board[y][x].boat:
-            if board[y][x].hit:
-                return self.check_left(x, y-1, board)
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_left(x, y - 1, board)
+                else:
+                    return False
             else:
-                return False
-        else:
+                return True
+        except IndexError:
             return True
 
     # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?

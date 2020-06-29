@@ -59,15 +59,15 @@ def dict_to_board(board):
         higher = extreme2
         # caso {extreme1: A1, extreme2: A1}
         if extreme1 == extreme2:
-            result[int(extreme1[0])][int(extreme1[1:])] = models.BoatCell(True, False)
+            result[int(extreme1[1])][int(extreme1[0])] = models.BoatCell(True, False)
             one_piece_boats += 1
         # caso {extreme1: A1, extreme2: A4}
         elif int(extreme1[0]) == int(extreme2[0]):
-            if int(extreme1[1:]) > int(extreme2[1:]):
+            if int(extreme1[1]) > int(extreme2[1]):
                 lower = int(extreme2)
                 higher = int(extreme1)
-            for j in range(int(lower[1:]) - 1, int(higher[1:])):
-                result[int(lower[0])][j] = models.BoatCell(True, False)
+            for j in range(int(lower[1]), int(higher[1]) + 1):
+                result[j][int(lower[0])] = models.BoatCell(True, False)
                 piece_count += 1
         else:
             # caso {extreme1: C5, extreme2: F5}
@@ -75,7 +75,7 @@ def dict_to_board(board):
                 lower = int(extreme2)
                 higher = int(extreme1)
             for j in range(int(lower[0]), int(higher[0]) + 1):
-                result[j][int(lower[1:]) - 1] = models.BoatCell(True, False)
+                result[int(lower[1])][j] = models.BoatCell(True, False)
                 piece_count += 1
     if piece_count == 2:
         two_piece_boats += 1
