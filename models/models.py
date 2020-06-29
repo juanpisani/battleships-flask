@@ -1,5 +1,3 @@
-import numpy as np
-
 from exceptions.game_exception import GameException
 from utils import dict_to_board, empty_boat_board, empty_shot_board
 
@@ -82,17 +80,25 @@ class Game:
         if self.shot_boards[user_id][y][x].shot:
             raise GameException('invalid_shot', 'Already made a shot there')
 
+
     # TODO PARA VER SI FUE HUNDIDO
-    def last_part_of_boat(self, x, y, board):
-        if board[y+1][x].boat:
-            if not board[y+1][x].hit:
-                return False
+    @staticmethod
+    def last_part_of_boat(x, y, board):
+        try:
+            if board[y+1][x].boat:
+                if not board[y+1][x].hit:
+                    return False
+        except IndexError as ignored:
+            pass
         if board[y-1][x].boat:
             if not board[y-1][x].hit:
                 return False
-        if board[y][x+1].boat:
-            if not board[y][x+1].hit:
-                return False
+        try:
+            if board[y][x+1].boat:
+                if not board[y][x+1].hit:
+                    return False
+        except IndexError as ignored:
+            pass
         if board[y][x-1].boat:
             if not board[y][x-1].hit:
                 return False
