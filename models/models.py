@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 from exceptions.game_exception import GameException
@@ -21,16 +23,26 @@ class User:
 
 class Game:
 
-    def __init__(self, game_id, player1, player2):
+    def __init__(self, game_id, player1):
         self.game_id = game_id
         self.player1 = player1
-        self.player2 = player2
-        self.boat_boards = {player1['user_id']: empty_boat_board(), player2['user_id']: empty_boat_board()}
-        self.players_boards_ready = {player1['user_id']: False, player2['user_id']: False}
-        self.shot_boards = {player1['user_id']: empty_shot_board(), player2['user_id']: empty_shot_board()}
-        self.players_joined = {player1['user_id']: False, player2['user_id']: False}
+        self.player2 = None
+        self.boat_boards = None
+        self.players_boards_ready = None
+        self.shot_boards = None
+        self.players_joined = None
         self.current_player = player1
-        self.hits = {player1['user_id']: 0, player2['user_id']: 0}
+        self.hits = None
+        self.players_rematch = None
+
+    def receive_second_player(self, player2):
+        self.player2 = player2
+        self.boat_boards = {self.player1['user_id']: empty_boat_board(), player2['user_id']: empty_boat_board()}
+        self.players_boards_ready = {self.player1['user_id']: False, player2['user_id']: False}
+        self.shot_boards = {self.player1['user_id']: empty_shot_board(), player2['user_id']: empty_shot_board()}
+        self.players_joined = {self.player1['user_id']: False, player2['user_id']: False}
+        self.hits = {self.player1['user_id']: 0, player2['user_id']: 0}
+        self.players_rematch = {self.player1['user_id']: False, player2['user_id']: False}
 
     def set_board(self, user_id, cells):
         # dict_to_board also validates board setup
@@ -53,8 +65,8 @@ class Game:
         if user_id == opponent_id:
             opponent_id = self.player2['user_id']
         opponent_board = self.boat_boards[opponent_id]
-        self.shot_boards[user_id][y][x].shot = True
-        if not opponent_board[y][x].boat:
+        self.shot_boards[user_id][x][y].shot = True
+        if not opponent_board[x][y].boat:
             self.missed_shot(x, y, user_id, opponent_id)
             self.change_turn()
             return False, False, False, True
@@ -62,33 +74,72 @@ class Game:
         return True, self.last_part_of_boat(x, y, opponent_board), self.check_end_game(user_id), False
 
     def missed_shot(self, x, y, user_id, opponent_id):
-        self.shot_boards[user_id][y][x].hit = False
-        self.boat_boards[opponent_id][y][x].hit = False
+        self.shot_boards[user_id][x][y].hit = False
+        self.boat_boards[opponent_id][x][y].hit = False
 
     def hit_shot(self, x, y, user_id, opponent_id):
-        self.shot_boards[user_id][y][x].hit = True
-        self.boat_boards[opponent_id][y][x].hit = True
+        self.shot_boards[user_id][x][y].hit = True
+        self.boat_boards[opponent_id][x][y].hit = True
         self.hits[user_id] += 1
 
     def validate_shot(self, user_id, x, y):
-        if self.shot_boards[user_id][y][x].shot:
+        if self.shot_boards[user_id][x][y].shot:
             raise GameException('invalid_shot', 'Already made a shot there')
 
     # TODO PARA VER SI FUE HUNDIDO
     def last_part_of_boat(self, x, y, board):
-        if board[y+1][x].boat:
-            if not board[y+1][x].hit:
-                return False
-        if board[y-1][x].boat:
-            if not board[y-1][x].hit:
-                return False
-        if board[y][x+1].boat:
-            if not board[y][x+1].hit:
-                return False
-        if board[y][x-1].boat:
-            if not board[y][x-1].hit:
-                return False
-        return True
+        return self.check_left(x-1, y, board) \
+               and self.check_right(x+1, y, board) \
+               and self.check_down(x, y-1, board) \
+               and self.check_up(x, y+1, board)
+
+    def check_left(self, x, y, board):
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_left(x - 1, y, board)
+                else:
+                    return False
+            else:
+                return True
+        except IndexError:
+            return True
+
+    def check_right(self, x, y, board):
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_right(x + 1, y, board)
+                else:
+                    return False
+            else:
+                return True
+        except IndexError:
+            return True
+
+    def check_up(self, x, y, board):
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_up(x, y + 1, board)
+                else:
+                    return False
+            else:
+                return True
+        except IndexError:
+            return True
+
+    def check_down(self, x, y, board):
+        try:
+            if board[x][y].boat:
+                if board[x][y].hit:
+                    return self.check_down(x, y - 1, board)
+                else:
+                    return False
+            else:
+                return True
+        except IndexError:
+            return True
 
     # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
     def check_end_game(self, user_id):
@@ -100,8 +151,26 @@ class Game:
         else:
             self.current_player = self.player1
 
-    def winner(self):
-        return
+    def random_shot(self, user_id):
+        random_x = random.randint(0, 9)
+        random_y = random.randint(0, 9)
+        while self.shot_boards[user_id][random_x][random_y].shot:
+            random_x = random.randint(0, 9)
+            random_y = random.randint(0, 9)
+        return random_x, random_y
+
+    # returns if both want rematch
+    def player_wants_rematch(self, user_id):
+        self.players_rematch.update({user_id: True})
+        return all(self.players_rematch.values())
+
+    def clear(self):
+        self.boat_boards = {self.player1['user_id']: empty_boat_board(), self.player2['user_id']: empty_boat_board()}
+        self.players_boards_ready = {self.player1['user_id']: False, self.player2['user_id']: False}
+        self.shot_boards = {self.player1['user_id']: empty_shot_board(), self.player2['user_id']: empty_shot_board()}
+        self.hits = {self.player1['user_id']: 0, self.player2['user_id']: 0}
+        self.players_rematch = {self.player1['user_id']: False, self.player2['user_id']: False}
+        self.current_player = self.player1
 
 
 class BoatCell:

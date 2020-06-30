@@ -24,6 +24,7 @@ db = Database()
 
 possible_opponents = []
 games = []
+user_game = {}
 
 @app.route('/', methods=['GET'])
 def hello():
@@ -56,21 +57,50 @@ def register_google():
         pass
 
 
+@app.route('/api/history', methods=['POST'])
+@cross_origin()
+def get_user_history():
+    user_id = request.json["user_id"]
+    return json.dumps(db.get_user_history(user_id)), 200
+
+
+@app.route('/api/history_between_users', methods=['POST'])
+@cross_origin()
+def get_history_between_users():
+    user_1 = request.json["user_1"]
+    user_2 = request.json["user_2"]
+    return json.dumps(db.get_history_between_users(user_1, user_2))
+
+
+@app.route('/api/stats', methods=['POST'])
+@cross_origin()
+def get_user_stats():
+    user_id = request.json["user_id"]
+    wins = json.dumps(db.get_user_wins_stats(user_id))
+    loses = json.dumps(db.get_user_loses_stats(user_id))
+    return dict(wins=wins, loses=loses), 200
+
+
 # TODO DISCONNECT
 @socketio.on('connect_player')
 def connect_player(json_obj):
     user = db.get_user(json_obj["user_id"])
     possible_opponents.append(user)
-    socketio.emit('connected_player', dict(player=user), broadcast=True,
-                  include_self=True)
+    if len(possible_opponents) == 1:
+        game = create_game(possible_opponents[0])
+        user_game[user['user_id']] = game.game_id
+        join_room(game.game_id, request.sid)
+        socketio.emit('connected_player', dict(player=user), room=game.game_id)
     if len(possible_opponents) == 2:
         if possible_opponents[0] == possible_opponents[1]:
             possible_opponents.pop(1)
             return
-        game = create_game(possible_opponents[0], possible_opponents[1])
-        socketio.emit('ready_to_start', dict(game=game.game_id, player_1=possible_opponents[0], player_2=possible_opponents[1]),
-                      broadcast=True,
-                      include_self=True)
+        game = get_game(user_game[possible_opponents[0]['user_id']])
+        game.receive_second_player(possible_opponents[1])
+        join_room(game.game_id, request.sid)
+        user_game[user['user_id']] = game.game_id
+        socketio.emit('connected_player', dict(player=user), room=game.game_id)
+        socketio.emit('ready_to_start', dict(game=game.game_id, player_1=possible_opponents[0], player_2=possible_opponents[1]), room=game.game_id)
         possible_opponents.clear()
 
 
@@ -110,12 +140,48 @@ def fire(json_obj):
     socketio.emit('shot_processed', dict(user_shot=json_obj['user_id'], hit=hit, sunken=sunken, x=x, y=y), room=game.game_id)
     if game_ended:
         socketio.emit('game_ended', dict(winner=user), room=game.game_id)
+        user_game.pop(game.player1['user_id'])
+        user_game.pop(game.player2['user_id'])
+        opponent = get_opponent(user['user_id'], game)
+        db.save_game(user['user_id'], opponent['user_id'])
     elif turn_changed:
         socketio.emit("player_turn", dict(user_id=game.current_player['user_id']), room=game.game_id)
 
 
-def create_game(player_1, player_2):
-    game = Game(str(uuid.uuid1()), player_1, player_2)
+@socketio.on('left_room')
+def leave_room(json_obj):
+    game = get_game(json_obj['game_id'])
+    if game is None:
+        return
+    user_id = json_obj['user_id']
+    winner = get_opponent(user_id, game)
+    socketio.emit('game_ended', dict(winner=winner), room=game.game_id, include_self=False)
+    user_game.pop(game.player1['user_id'])
+    user_game.pop(game.player2['user_id'])
+    db.save_game(winner['user_id'], user_id)
+
+
+@socketio.on('random_shot')
+def random_shot(json_obj):
+    user_id = json_obj['user_id']
+    game = get_game(json_obj['game_id'])
+    x, y = game.random_shot(user_id)
+    return fire(dict(user_id=user_id, game_id=game.game_id, x=x, y=y))
+
+
+@socketio.on('rematch')
+def rematch(json_obj):
+    user_id = json_obj['user_id']
+    game = get_game(json_obj['game_id'])
+    both_rematch = game.player_wants_rematch(user_id)
+    socketio.emit('rematch_processed', room=game.game_id)
+    if both_rematch:
+        game.clear()
+        socketio.emit('ready_to_start', dict(game=game.game_id, player_1=game.player1, player_2=game.player2), room=game.game_id)
+
+
+def create_game(player_1):
+    game = Game(str(uuid.uuid1()), player_1)
     games.append(game)
     return game
 
@@ -125,6 +191,12 @@ def get_game(game_id):
         if game.game_id == game_id:
             return game
 #     TODO ERROR
+
+
+def get_opponent(user_id, game):
+    if game.player1['user_id'] == user_id:
+        return game.player2
+    return game.player1
 
 
 if __name__ == '__main__':
