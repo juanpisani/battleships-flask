@@ -152,7 +152,7 @@ class Game:
     def random_shot(self, user_id):
         random_x = random.randint(0, 9)
         random_y = random.randint(0, 9)
-        while self.shot_boards[user_id].shot:
+        while self.shot_boards[user_id][random_x][random_y].shot:
             random_x = random.randint(0, 9)
             random_y = random.randint(0, 9)
         return random_x, random_y

@@ -57,7 +57,7 @@ def register_google():
 @cross_origin()
 def get_user_history():
     user_id = request.json["user_id"]
-    return json.dumps(db.get_user_history(user_id))
+    return json.dumps(db.get_user_history(user_id)), 200
 
 
 # TODO DISCONNECT
