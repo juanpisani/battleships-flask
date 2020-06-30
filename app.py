@@ -113,8 +113,20 @@ def fire(json_obj):
         socketio.emit('game_ended', dict(winner=user), room=game.game_id)
         user_game.pop(game.player1['user_id'])
         user_game.pop(game.player2['user_id'])
+        games.remove(game)
     elif turn_changed:
         socketio.emit("player_turn", dict(user_id=game.current_player['user_id']), room=game.game_id)
+
+
+@socketio.on('left_room')
+def leave_room(json_obj):
+    game = get_game(json_obj['game_id'])
+    use_id = json_obj['user_id']
+    winner = get_opponent(use_id, game)
+    socketio.emit('game_ended', dict(winner=winner), room=game.game_id, include_self=False)
+    user_game.pop(game.player1['user_id'])
+    user_game.pop(game.player2['user_id'])
+    games.remove(game)
 
 
 def create_game(player_1):
@@ -128,6 +140,12 @@ def get_game(game_id):
         if game.game_id == game_id:
             return game
 #     TODO ERROR
+
+
+def get_opponent(user_id, game):
+    if game.player1['user_id'] == user_id:
+        return game.player2
+    return game.player1
 
 
 if __name__ == '__main__':
