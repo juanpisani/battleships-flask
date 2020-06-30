@@ -60,6 +60,22 @@ def get_user_history():
     return json.dumps(db.get_user_history(user_id)), 200
 
 
+@app.route('/api/history_between_users', methods=['POST'])
+@cross_origin()
+def get_history_between_users():
+    user_1 = request.json["user_1"]
+    user_2 = request.json["user_2"]
+    return json.dumps(db.get_history_between_users(user_1, user_2))
+
+
+@app.route('/api/stats', methods=['POST'])
+@cross_origin()
+def get_user_stats():
+    user_id = request.json["user_id"]
+    wins, loses = db.get_user_stats(user_id)
+    return dict(wins=wins, loses=loses)
+
+
 # TODO DISCONNECT
 @socketio.on('connect_player')
 def connect_player(json_obj):
@@ -121,7 +137,6 @@ def fire(json_obj):
         socketio.emit('game_ended', dict(winner=user), room=game.game_id)
         user_game.pop(game.player1['user_id'])
         user_game.pop(game.player2['user_id'])
-        games.remove(game)
         opponent = get_opponent(user['user_id'], game)
         db.save_game(user['user_id'], opponent['user_id'])
     elif turn_changed:
@@ -138,7 +153,6 @@ def leave_room(json_obj):
     socketio.emit('game_ended', dict(winner=winner), room=game.game_id, include_self=False)
     user_game.pop(game.player1['user_id'])
     user_game.pop(game.player2['user_id'])
-    games.remove(game)
     db.save_game(winner['user_id'], user_id)
 
 
@@ -148,6 +162,17 @@ def random_shot(json_obj):
     game = get_game(json_obj['game_id'])
     x, y = game.random_shot(user_id)
     return fire(dict(user_id=user_id, game_id=game.game_id, x=x, y=y))
+
+
+@socketio.on('rematch')
+def rematch(json_obj):
+    user_id = json_obj['user_id']
+    game = get_game(json_obj['game_id'])
+    both_rematch = game.player_wants_rematch(user_id)
+    socketio.emit('rematch_processed', room=game.game_id)
+    if both_rematch:
+        game.clear()
+        socketio.emit('ready_to_start', dict(game=game.game_id, player_1=game.player1, player_2=game.player2), room=game.game_id)
 
 
 def create_game(player_1):

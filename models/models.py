@@ -33,6 +33,7 @@ class Game:
         self.players_joined = None
         self.current_player = player1
         self.hits = None
+        self.players_rematch = None
 
     def receive_second_player(self, player2):
         self.player2 = player2
@@ -41,6 +42,7 @@ class Game:
         self.shot_boards = {self.player1['user_id']: empty_shot_board(), player2['user_id']: empty_shot_board()}
         self.players_joined = {self.player1['user_id']: False, player2['user_id']: False}
         self.hits = {self.player1['user_id']: 0, player2['user_id']: 0}
+        self.players_rematch = {self.player1['user_id']: False, player2['user_id']: False}
 
     def set_board(self, user_id, cells):
         # dict_to_board also validates board setup
@@ -156,6 +158,19 @@ class Game:
             random_x = random.randint(0, 9)
             random_y = random.randint(0, 9)
         return random_x, random_y
+
+    # returns if both want rematch
+    def player_wants_rematch(self, user_id):
+        self.players_rematch.update({user_id: True})
+        return all(self.players_rematch.values())
+
+    def clear(self):
+        self.boat_boards = {self.player1['user_id']: empty_boat_board(), self.player2['user_id']: empty_boat_board()}
+        self.players_boards_ready = {self.player1['user_id']: False, self.player2['user_id']: False}
+        self.shot_boards = {self.player1['user_id']: empty_shot_board(), self.player2['user_id']: empty_shot_board()}
+        self.hits = {self.player1['user_id']: 0, self.player2['user_id']: 0}
+        self.players_rematch = {self.player1['user_id']: False, self.player2['user_id']: False}
+        self.current_player = self.player1
 
 
 class BoatCell:
