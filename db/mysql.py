@@ -37,12 +37,15 @@ class Database:
         history = self.cur.fetchall()
         return history
 
-    def get_user_stats(self, user_id):
+    def get_user_wins_stats(self, user_id):
         self.cur.execute('select count(*) from Game where winner_id = ' + user_id)
         wins = self.cur.fetchall()
+        return wins[0]['count(*)']
+
+    def get_user_loses_stats(self, user_id):
         self.cur.execute('select count(*) from Game where loser_id = ' + user_id)
         loses = self.cur.fetchall()
-        return wins[0]['count(*)'], loses[0]['count(*)']
+        return loses[0]['count(*)']
 
     def get_history_between_users(self, user_1, user_2):
         self.cur.execute('select count from Game where (winner_id = ' + user_1 + ' and loser_id = ' + user_2 + ') or (winner_id = ' + user_2 + ' and loser_id = ' + user_1 + ')')

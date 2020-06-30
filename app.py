@@ -72,8 +72,9 @@ def get_history_between_users():
 @cross_origin()
 def get_user_stats():
     user_id = request.json["user_id"]
-    wins, loses = db.get_user_stats(user_id)
-    return dict(wins=wins, loses=loses)
+    wins = json.dumps(db.get_user_wins_stats(user_id))
+    loses = json.dumps(db.get_user_loses_stats(user_id))
+    return dict(wins=wins, loses=loses), 200
 
 
 # TODO DISCONNECT
