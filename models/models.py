@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 from exceptions.game_exception import GameException
@@ -147,8 +149,13 @@ class Game:
         else:
             self.current_player = self.player1
 
-    def winner(self):
-        return
+    def random_shot(self, user_id):
+        random_x = random.randint(0, 9)
+        random_y = random.randint(0, 9)
+        while self.shot_boards[user_id].shot:
+            random_x = random.randint(0, 9)
+            random_y = random.randint(0, 9)
+        return random_x, random_y
 
 
 class BoatCell:
