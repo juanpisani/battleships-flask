@@ -25,6 +25,10 @@ db = Database()
 possible_opponents = []
 games = []
 
+@app.route('/', methods=['GET'])
+def hello():
+    return 'Hello World!'
+
 
 @app.route('/api/auth', methods=['POST'])
 @cross_origin()
