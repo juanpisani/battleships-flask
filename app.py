@@ -145,7 +145,9 @@ def fire(json_obj):
 
 @socketio.on('left_room')
 def leave_room(json_obj):
+    print('----------------GAME--------------------')
     game = get_game(json_obj['game_id'])
+    print(game)
     if game is None:
         return
     user_id = json_obj['user_id']
