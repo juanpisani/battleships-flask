@@ -151,9 +151,17 @@ def leave_room(json_obj):
     user_id = json_obj['user_id']
     winner = get_opponent(user_id, game)
     socketio.emit('game_ended', dict(winner=winner), room=game.game_id, include_self=False)
-    user_game.pop(game.player1['user_id'])
-    user_game.pop(game.player2['user_id'])
-    db.save_game(winner['user_id'], user_id)
+    if game.player1['user_id'] in user_game and game.player2['user_id'] in user_game:
+        user_game.pop(game.player1['user_id'])
+        user_game.pop(game.player2['user_id'])
+        db.save_game(winner['user_id'], user_id)
+        games.remove(game)
+
+
+@socketio.on('left_queue')
+def left_queue(json_obj):
+    user = db.get_user(json_obj["user_id"])
+    possible_opponents.remove(user)
 
 
 @socketio.on('random_shot')
