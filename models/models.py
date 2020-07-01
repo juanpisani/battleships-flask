@@ -86,7 +86,6 @@ class Game:
         if self.shot_boards[user_id][x][y].shot:
             raise GameException('invalid_shot', 'Already made a shot there')
 
-    # TODO PARA VER SI FUE HUNDIDO
     def last_part_of_boat(self, x, y, board):
         return self.check_left(x-1, y, board) \
                and self.check_right(x+1, y, board) \
@@ -141,7 +140,6 @@ class Game:
         except IndexError:
             return True
 
-    # TODO CUANTOS HITS TIENE Q TENER PARA GANAR?
     def check_end_game(self, user_id):
         return self.hits[user_id] == 20
 

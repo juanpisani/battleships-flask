@@ -26,10 +26,6 @@ possible_opponents = []
 games = []
 user_game = {}
 
-@app.route('/', methods=['GET'])
-def hello():
-    return 'Hello World!'
-
 
 @app.route('/api/auth', methods=['POST'])
 @cross_origin()
@@ -81,7 +77,6 @@ def get_user_stats():
     return dict(wins=wins, loses=loses), 200
 
 
-# TODO DISCONNECT
 @socketio.on('connect_player')
 def connect_player(json_obj):
     user = db.get_user(json_obj["user_id"])
@@ -190,7 +185,6 @@ def get_game(game_id):
     for game in games:
         if game.game_id == game_id:
             return game
-#     TODO ERROR
 
 
 def get_opponent(user_id, game):

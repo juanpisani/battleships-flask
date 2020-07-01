@@ -53,6 +53,8 @@ class Database:
         return history
 
     def get_user(self, user_id):
+        self.con.ping(reconnect=True)
         self.cur.execute('select * from User where user_id = ' + user_id)
         users = self.cur.fetchall()
+        self.con.commit()
         return users[0] if users else None
