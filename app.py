@@ -13,6 +13,7 @@ from google.oauth2 import id_token
 from db.mysql import Database
 from exceptions.game_exception import GameException
 from models.models import Game, User
+from utils import json_serial
 
 app = Flask(__name__)
 cors = CORS(app=app)
@@ -109,7 +110,7 @@ def join_game_room(json_obj):
     game_instance = get_game(game)
     game_instance.join_player(user['user_id'])
     if game_instance.both_players_joined():
-        socketio.emit('ready_for_setup', {"message": "Start pieces setup", "limit_time": datetime.datetime.now() + datetime.timedelta(seconds=60)}, room=game)
+        socketio.emit('ready_for_setup', {"message": "Start pieces setup", "limit_time": json.dumps((datetime.datetime.now() + datetime.timedelta(seconds=60)), default=json_serial)}, room=game)
 
 
 @socketio.on('setup_board')
