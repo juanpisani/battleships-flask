@@ -94,6 +94,8 @@ class Game:
 
     def check_left(self, x, y, board):
         try:
+            if x < 0 or y < 0:
+                raise IndexError
             if board[x][y].boat:
                 if board[x][y].hit:
                     return self.check_left(x - 1, y, board)
@@ -106,6 +108,8 @@ class Game:
 
     def check_right(self, x, y, board):
         try:
+            if x < 0 or y < 0:
+                raise IndexError
             if board[x][y].boat:
                 if board[x][y].hit:
                     return self.check_right(x + 1, y, board)
@@ -118,6 +122,8 @@ class Game:
 
     def check_up(self, x, y, board):
         try:
+            if x < 0 or y < 0:
+                raise IndexError
             if board[x][y].boat:
                 if board[x][y].hit:
                     return self.check_up(x, y + 1, board)
@@ -130,6 +136,8 @@ class Game:
 
     def check_down(self, x, y, board):
         try:
+            if x < 0 or y < 0:
+                raise IndexError
             if board[x][y].boat:
                 if board[x][y].hit:
                     return self.check_down(x, y - 1, board)
