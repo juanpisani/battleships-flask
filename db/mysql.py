@@ -8,7 +8,7 @@ class Database:
     def __init__(self):
         host = "localhost"
         user = "root"
-        password = "Nueve12!"
+        password = "password"
         db = "battleships"
         self.con = pymysql.connect(host=host, user=user, password=password, db=db, cursorclass=pymysql.cursors.
                                    DictCursor)
