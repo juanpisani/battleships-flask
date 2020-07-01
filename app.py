@@ -175,6 +175,12 @@ def rematch(json_obj):
         socketio.emit('ready_to_start', dict(game=game.game_id, player_1=game.player1, player_2=game.player2), room=game.game_id)
 
 
+@socketio.on('left_queue')
+def left_queue(json_obj):
+    user = db.get_user(json_obj["user_id"])
+    possible_opponents.remove(user)
+
+
 def create_game(player_1):
     game = Game(str(uuid.uuid1()), player_1)
     games.append(game)
