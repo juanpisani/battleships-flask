@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import datetime
 
 from flask_socketio import SocketIO, join_room
 from flask import Flask, request
@@ -108,7 +109,7 @@ def join_game_room(json_obj):
     game_instance = get_game(game)
     game_instance.join_player(user['user_id'])
     if game_instance.both_players_joined():
-        socketio.emit('ready_for_setup', {"message": "Start pieces setup"}, room=game)
+        socketio.emit('ready_for_setup', {"message": "Start pieces setup", "limit_time": datetime.datetime.now() + datetime.timedelta(seconds=60)}, room=game)
 
 
 @socketio.on('setup_board')
